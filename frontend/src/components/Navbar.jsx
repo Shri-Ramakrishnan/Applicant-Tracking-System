@@ -1,64 +1,72 @@
-import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import React from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import { useTheme } from "../context/ThemeContext";
 
 export default function Navbar() {
   const { user, logout } = useAuth();
+  const { dark, setDark } = useTheme();
   const navigate = useNavigate();
 
   const handleLogout = () => {
     logout();
-    navigate('/login');
+    navigate("/login");
   };
 
   return (
-    <nav className="bg-slate-950 border-b border-slate-800 text-slate-100">
-      <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-        
-        <Link to="/" className="text-xl font-bold tracking-wide text-indigo-400">
+    <nav className="navbar sticky top-0 z-40">
+      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
+        <Link to="/" className="text-xl font-bold tracking-tight">
           ATS PRO
         </Link>
 
-        <div className="flex items-center gap-6 text-sm text-slate-300">
-
+        <div className="flex items-center gap-2 sm:gap-3">
           {!user && (
             <>
-              <Link to="/jobs" className="hover:text-white transition">Jobs</Link>
-              <Link to="/login" className="hover:text-white transition">Login</Link>
-              <Link
-                to="/register"
-                className="btn-primary"
-              >
+              <Link to="/login" className="btn-secondary text-sm">
+                Login
+              </Link>
+              <Link to="/register" className="btn-primary text-sm">
                 Register
               </Link>
             </>
           )}
 
-          {user && user.role === 'applicant' && (
+          {user?.role === "applicant" && (
             <>
-              <Link to="/jobs" className="hover:text-white transition">Browse Jobs</Link>
-              <Link to="/my-applications" className="hover:text-white transition">My Applications</Link>
+              <Link to="/jobs" className="btn-secondary text-sm">
+                Jobs
+              </Link>
+              <Link to="/my-applications" className="btn-secondary text-sm">
+                Applications
+              </Link>
             </>
           )}
 
-          {user && user.role === 'recruiter' && (
+          {user?.role === "recruiter" && (
             <>
-              <Link to="/recruiter/jobs" className="hover:text-white transition">My Jobs</Link>
-              <Link to="/recruiter/jobs/create" className="hover:text-white transition">Post Job</Link>
-              <Link to="/recruiter/interviews" className="hover:text-white transition">Interviews</Link>
+              <Link to="/recruiter/jobs" className="btn-secondary text-sm">
+                Jobs
+              </Link>
+              <Link to="/recruiter/interviews" className="btn-secondary text-sm">
+                Interviews
+              </Link>
             </>
           )}
+
+          <button onClick={() => setDark(!dark)} className="btn-secondary text-sm" type="button">
+            {dark ? "Light" : "Dark"}
+          </button>
 
           {user && (
-            <div className="flex items-center gap-4">
-              <Link to="/profile" className="text-indigo-400 hover:text-indigo-300 font-medium">
+            <>
+              <Link to="/profile" className="btn-secondary text-sm">
                 {user.name}
               </Link>
-
-              <button onClick={handleLogout} className="btn-danger">
+              <button onClick={handleLogout} className="btn-danger text-sm" type="button">
                 Logout
               </button>
-            </div>
+            </>
           )}
         </div>
       </div>

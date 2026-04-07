@@ -1,73 +1,81 @@
-import React, { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import api from '../services/api';
+import React, { useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import api from "../services/api";
 
 export default function GenerateOffer() {
   const { applicationId } = useParams();
   const navigate = useNavigate();
-  const [form, setForm] = useState({ salary: '', joiningDate: '' });
+  const [form, setForm] = useState({ salary: "", joiningDate: "" });
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
-  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = (e) => {
+    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
+    setError("");
     try {
-      await api.post('/offers/generate', { applicationId, ...form });
+      await api.post("/offers/generate", { applicationId, ...form });
       navigate(-1);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to generate offer');
+      setError(err.response?.data?.message || "Failed to generate offer");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="max-w-md mx-auto">
-      <div className="bg-white shadow-md rounded-lg p-8">
-        <h1 className="text-2xl font-bold text-gray-800 mb-6">Generate Job Offer</h1>
-        {error && <div className="bg-red-50 border border-red-300 text-red-700 px-4 py-3 rounded mb-4 text-sm">{error}</div>}
+    <section className="mx-auto max-w-md">
+      <div className="card">
+        <h1 className="mb-6 text-2xl font-bold">Generate Offer</h1>
+
+        {error && (
+          <div className="mb-4 rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-900/30 dark:text-red-300">
+            {error}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Salary (Annual, USD)</label>
+            <label className="label">Salary (Annual, USD)</label>
             <input
-              type="number"
+              className="input"
               name="salary"
+              type="number"
+              min={1}
               value={form.salary}
               onChange={handleChange}
               required
-              min={1}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="e.g. 85000"
+              placeholder="85000"
             />
           </div>
+
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Joining Date</label>
+            <label className="label">Joining Date</label>
             <input
-              type="date"
+              className="input"
               name="joiningDate"
+              type="date"
+              min={new Date().toISOString().split("T")[0]}
               value={form.joiningDate}
               onChange={handleChange}
               required
-              min={new Date().toISOString().split('T')[0]}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
+
           <div className="flex gap-3 pt-2">
-            <button type="submit" disabled={loading}
-              className="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 disabled:opacity-50 font-medium">
-              {loading ? 'Generating...' : 'Generate Offer'}
+            <button type="submit" disabled={loading} className="btn-primary">
+              {loading ? "Generating..." : "Generate Offer"}
             </button>
-            <button type="button" onClick={() => navigate(-1)}
-              className="border border-gray-300 px-6 py-2 rounded text-gray-600 hover:bg-gray-50">
+            <button type="button" onClick={() => navigate(-1)} className="btn-secondary">
               Cancel
             </button>
           </div>
         </form>
       </div>
-    </div>
+    </section>
   );
 }

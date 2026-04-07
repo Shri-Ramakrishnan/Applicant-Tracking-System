@@ -3,6 +3,8 @@ const Recruiter = require('../models/Recruiter');
 const Application = require('../models/Application');
 const { validationResult } = require('express-validator');
 
+
+// CREATE JOB
 const createJob = async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty())
@@ -14,6 +16,20 @@ const createJob = async (req, res) => {
       return res.status(404).json({ message: 'Recruiter profile not found' });
 
     const { title, description, requirements, location } = req.body;
+
+    // Prevent accidental duplicate job posting
+    const existingJob = await Job.findOne({
+      recruiter: recruiter._id,
+      title,
+      location,
+      status: 'active'
+    });
+
+    if (existingJob) {
+      return res.status(400).json({
+        message: 'An active job with same title & location already exists.'
+      });
+    }
 
     const job = await Job.create({
       recruiter: recruiter._id,
@@ -29,6 +45,8 @@ const createJob = async (req, res) => {
   }
 };
 
+
+// GET ALL ACTIVE JOBS (With applied filtering)
 const getAllActiveJobs = async (req, res) => {
   try {
     let jobs = await Job.find({ status: 'active' })
@@ -38,7 +56,7 @@ const getAllActiveJobs = async (req, res) => {
       })
       .sort({ createdAt: -1 });
 
-    // Hide already applied jobs for applicant
+    // If applicant is logged in → hide applied jobs
     if (req.user && req.user.role === 'applicant') {
       const applications = await Application.find({
         applicant: req.user._id
@@ -59,6 +77,8 @@ const getAllActiveJobs = async (req, res) => {
   }
 };
 
+
+// GET RECRUITER JOBS
 const getRecruiterJobs = async (req, res) => {
   try {
     const recruiter = await Recruiter.findOne({ user: req.user._id });
@@ -74,6 +94,8 @@ const getRecruiterJobs = async (req, res) => {
   }
 };
 
+
+// GET JOB BY ID
 const getJobById = async (req, res) => {
   try {
     const job = await Job.findById(req.params.id)
@@ -91,6 +113,8 @@ const getJobById = async (req, res) => {
   }
 };
 
+
+// UPDATE JOB STATUS
 const updateJobStatus = async (req, res) => {
   try {
     const recruiter = await Recruiter.findOne({ user: req.user._id });
@@ -113,6 +137,7 @@ const updateJobStatus = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
 
 module.exports = {
   createJob,

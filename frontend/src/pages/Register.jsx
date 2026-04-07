@@ -1,40 +1,40 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import api from '../services/api';
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import api from "../services/api";
 
 export default function Register() {
   const [form, setForm] = useState({
-    name: '',
-    email: '',
-    password: '',
-    role: 'applicant',
-    organization: '',
-    skills: '',
-    experience: ''
+    name: "",
+    email: "",
+    password: "",
+    role: "applicant",
+    organization: "",
+    skills: "",
+    experience: "",
   });
-
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const handleChange = (e) =>
-    setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = (e) => {
+    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
     setLoading(true);
-    setError('');
     try {
-      const { data } = await api.post('/auth/register', form);
+      const { data } = await api.post("/auth/register", form);
       login(data);
-      navigate(data.role === 'recruiter' ? '/recruiter/jobs' : '/jobs');
+      navigate(data.role === "recruiter" ? "/recruiter/jobs" : "/jobs");
     } catch (err) {
       setError(
         err.response?.data?.message ||
-        err.response?.data?.errors?.[0]?.msg ||
-        'Registration failed'
+          err.response?.data?.errors?.[0]?.msg ||
+          "Registration failed",
       );
     } finally {
       setLoading(false);
@@ -42,142 +42,115 @@ export default function Register() {
   };
 
   return (
-    <div className="max-w-md mx-auto mt-10">
-      <div className="bg-white shadow-lg rounded-lg p-8">
-        <h2 className="text-2xl font-bold text-black mb-6 text-center">
-          Create Account
-        </h2>
+    <section className="mx-auto max-w-md">
+      <div className="card">
+        <h1 className="mb-6 text-center text-2xl font-bold">Create Account</h1>
 
         {error && (
-          <div className="bg-red-100 border border-red-400 text-red-600 px-4 py-3 rounded mb-4 text-sm">
+          <div className="mb-4 rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-900/30 dark:text-red-300">
             {error}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
-
           <div>
-            <label className="block text-sm font-medium text-black mb-1">
-              Full Name
-            </label>
+            <label className="label">Full Name</label>
             <input
-              type="text"
+              className="input"
               name="name"
+              type="text"
               value={form.name}
               onChange={handleChange}
               required
-              className="w-full border border-gray-300 text-black placeholder-gray-400 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-black"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-black mb-1">
-              Email
-            </label>
+            <label className="label">Email</label>
             <input
-              type="email"
+              className="input"
               name="email"
+              type="email"
               value={form.email}
               onChange={handleChange}
               required
-              className="w-full border border-gray-300 text-black placeholder-gray-400 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-black"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-black mb-1">
-              Password
-            </label>
+            <label className="label">Password</label>
             <input
-              type="password"
+              className="input"
               name="password"
+              type="password"
               value={form.password}
               onChange={handleChange}
-              required
               minLength={6}
-              className="w-full border border-gray-300 text-black placeholder-gray-400 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-black"
+              required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-black mb-1">
-              Role
-            </label>
-            <select
-              name="role"
-              value={form.role}
-              onChange={handleChange}
-              className="w-full border border-gray-300 text-black rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-black"
-            >
+            <label className="label">Role</label>
+            <select className="input" name="role" value={form.role} onChange={handleChange}>
               <option value="applicant">Applicant</option>
               <option value="recruiter">Recruiter</option>
             </select>
           </div>
 
-          {form.role === 'recruiter' && (
+          {form.role === "recruiter" && (
             <div>
-              <label className="block text-sm font-medium text-black mb-1">
-                Organization
-              </label>
+              <label className="label">Organization</label>
               <input
-                type="text"
+                className="input"
                 name="organization"
+                type="text"
                 value={form.organization}
                 onChange={handleChange}
                 required
-                className="w-full border border-gray-300 text-black rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-black"
               />
             </div>
           )}
 
-          {form.role === 'applicant' && (
+          {form.role === "applicant" && (
             <>
               <div>
-                <label className="block text-sm font-medium text-black mb-1">
-                  Skills
-                </label>
+                <label className="label">Skills</label>
                 <input
-                  type="text"
+                  className="input"
                   name="skills"
+                  type="text"
                   value={form.skills}
                   onChange={handleChange}
                   placeholder="React, Node.js"
-                  className="w-full border border-gray-300 text-black placeholder-gray-400 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-black"
                 />
               </div>
-
               <div>
-                <label className="block text-sm font-medium text-black mb-1">
-                  Experience (Years)
-                </label>
+                <label className="label">Experience (Years)</label>
                 <input
-                  type="number"
+                  className="input"
                   name="experience"
+                  type="number"
+                  min={0}
                   value={form.experience}
                   onChange={handleChange}
-                  min={0}
-                  className="w-full border border-gray-300 text-black rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-black"
                 />
               </div>
             </>
           )}
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-black text-white py-2 rounded-md hover:bg-gray-800 disabled:opacity-50 font-medium transition"
-          >
-            {loading ? 'Creating account...' : 'Register'}
+          <button type="submit" disabled={loading} className="btn-primary w-full">
+            {loading ? "Creating account..." : "Register"}
           </button>
         </form>
 
-        <p className="text-center text-sm text-gray-600 mt-4">
-          Already have an account?{' '}
-          <Link to="/login" className="text-black font-medium hover:underline">
+        <p className="mt-4 text-center text-sm text-slate-600 dark:text-slate-300">
+          Already have an account?{" "}
+          <Link to="/login" className="font-medium underline">
             Sign in
           </Link>
         </p>
       </div>
-    </div>
+    </section>
   );
 }

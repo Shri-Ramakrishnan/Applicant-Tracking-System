@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import api from "../services/api";
 
-function Profile() {
+export default function Profile() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -11,7 +12,7 @@ function Profile() {
         const res = await api.get("/users/profile");
         setData(res.data);
       } catch (err) {
-        console.error("Failed to load profile");
+        setError(err.response?.data?.message || "Failed to load profile");
       } finally {
         setLoading(false);
       }
@@ -21,60 +22,51 @@ function Profile() {
   }, []);
 
   if (loading) {
-    return (
-      <div className="text-center py-10 text-slate-400">
-        Loading profile...
-      </div>
-    );
+    return <div className="py-10 text-center text-slate-500">Loading profile...</div>;
   }
 
   if (!data) {
-    return (
-      <div className="text-center py-10 text-red-500">
-        Failed to load profile.
-      </div>
-    );
+    return <div className="py-10 text-center text-red-500">{error || "Profile unavailable."}</div>;
   }
 
+  const skills = Array.isArray(data.extraData?.skills)
+    ? data.extraData.skills.join(", ")
+    : data.extraData?.skills;
+
   return (
-    <div className="max-w-xl mx-auto card p-8">
-      <h2 className="text-2xl font-bold mb-6 text-white">
-        Profile Information
-      </h2>
+    <section className="mx-auto max-w-xl">
+      <div className="card">
+        <h1 className="mb-6 text-2xl font-bold">Profile Information</h1>
 
-      <div className="space-y-4 text-slate-300">
-        <p>
-          <span className="text-slate-400">Name:</span> {data.user.name}
-        </p>
-        <p>
-          <span className="text-slate-400">Email:</span> {data.user.email}
-        </p>
-        <p>
-          <span className="text-slate-400">Role:</span> {data.user.role}
-        </p>
-
-        {data.extraData && data.user.role === "recruiter" && (
+        <div className="space-y-3 text-sm text-slate-700 dark:text-slate-200">
           <p>
-            <span className="text-slate-400">Organization:</span>{" "}
-            {data.extraData.organization}
+            <span className="font-semibold">Name:</span> {data.user.name}
           </p>
-        )}
+          <p>
+            <span className="font-semibold">Email:</span> {data.user.email}
+          </p>
+          <p>
+            <span className="font-semibold">Role:</span> {data.user.role}
+          </p>
 
-        {data.extraData && data.user.role === "applicant" && (
-          <>
+          {data.extraData && data.user.role === "recruiter" && (
             <p>
-              <span className="text-slate-400">Skills:</span>{" "}
-              {data.extraData.skills}
+              <span className="font-semibold">Organization:</span> {data.extraData.organization}
             </p>
-            <p>
-              <span className="text-slate-400">Experience:</span>{" "}
-              {data.extraData.experience}
-            </p>
-          </>
-        )}
+          )}
+
+          {data.extraData && data.user.role === "applicant" && (
+            <>
+              <p>
+                <span className="font-semibold">Skills:</span> {skills || "N/A"}
+              </p>
+              <p>
+                <span className="font-semibold">Experience:</span> {data.extraData.experience ?? 0} years
+              </p>
+            </>
+          )}
+        </div>
       </div>
-    </div>
+    </section>
   );
 }
-
-export default Profile;

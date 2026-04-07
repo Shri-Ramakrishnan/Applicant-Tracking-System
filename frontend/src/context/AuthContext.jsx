@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import api from '../services/api';
+import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
+import api from "../services/api";
 
 const AuthContext = createContext(null);
 
@@ -8,14 +8,14 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const stored = localStorage.getItem('ats_user');
+    const stored = localStorage.getItem("ats_user");
     if (stored) {
       try {
         const parsed = JSON.parse(stored);
         setUser(parsed);
-        api.defaults.headers.common['Authorization'] = `Bearer ${parsed.token}`;
+        api.defaults.headers.common.Authorization = `Bearer ${parsed.token}`;
       } catch {
-        localStorage.removeItem('ats_user');
+        localStorage.removeItem("ats_user");
       }
     }
     setLoading(false);
@@ -23,21 +23,27 @@ export const AuthProvider = ({ children }) => {
 
   const login = (userData) => {
     setUser(userData);
-    localStorage.setItem('ats_user', JSON.stringify(userData));
-    api.defaults.headers.common['Authorization'] = `Bearer ${userData.token}`;
+    localStorage.setItem("ats_user", JSON.stringify(userData));
+    api.defaults.headers.common.Authorization = `Bearer ${userData.token}`;
   };
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem('ats_user');
-    delete api.defaults.headers.common['Authorization'];
+    localStorage.removeItem("ats_user");
+    delete api.defaults.headers.common.Authorization;
   };
 
+  const value = useMemo(() => ({ user, login, logout, loading }), [loading, user]);
+
   return (
-    <AuthContext.Provider value={{ user, login, logout, loading }}>
-      {children}
-    </AuthContext.Provider>
+    <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
   );
 };
 
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error("useAuth must be used inside AuthProvider");
+  }
+  return context;
+};
